@@ -16,12 +16,12 @@
 // Max limits of each quantity - to be changed depeding on applications
 const double accel_max {0.5};
 const double alpha_max {0.2};
-const double speed_max {1.0};
-const double omega_max {1.0};
+const double speed_max {10.0};
+const double omega_max {10.0};
 
 const double path_move_tol {0.01};
 const double default_dt {0.02};
-const double M_PI {3.14};
+
 
 class TrajBuilder{
 private:
@@ -31,6 +31,7 @@ private:
   double speed_max_;
   double omega_max_;
   double path_move_tol_;
+ 
 
   geometry_msgs::Twist halt_twist_;
 

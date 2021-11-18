@@ -7,6 +7,7 @@ TrajBuilder::TrajBuilder(){
   speed_max_ = speed_max;
   omega_max_ = omega_max;
   path_move_tol_ = path_move_tol;
+  
 
   // halt vec_states
 
@@ -53,6 +54,7 @@ double TrajBuilder::convertPlanarQuat2Psi(geometry_msgs::Quaternion quaternion){
   double quat_z = quaternion.z;
     double quat_w = quaternion.w;
     double psi = 2.0 * atan2(quat_z, quat_w);
+    return psi;
 }
 geometry_msgs::Quaternion TrajBuilder::convertPlanarPsi2Quaternion(double psi){
   geometry_msgs::Quaternion quaternion;
@@ -114,12 +116,12 @@ std::vector<nav_msgs::Odometry>& vec_states){
     des_state.twist.twist.angular.z = omega_des;
 
     double t_cruise = cruise_distance/omega_max_;
-    int npts_cruise = round(t_cruise/dt_;);
+    int npts_cruise = round(t_cruise/dt_);
 
     for(int i{0}; i<npts_cruise; i++){
       psi_des += omega_des*dt_;
       des_state.pose.pose.orientation = convertPlanarPsi2Quaternion(psi_des);
-      vec_states.push_back(des_state;)
+      vec_states.push_back(des_state);
     }
 
     //ramp down
@@ -133,8 +135,8 @@ std::vector<nav_msgs::Odometry>& vec_states){
     }
 
     des_state.pose.pose = end_pose.pose;
-    des_state.twist = halt_twist_;
-    vec_states.push.back(des_state);
+    des_state.twist.twist = halt_twist_;
+    vec_states.push_back(des_state);
 
 
 }
@@ -202,9 +204,9 @@ void TrajBuilder::build_spin_traj(geometry_msgs::PoseStamped start_pose,
     double ramp_up_dist = 0.5 * alpha_max_ * ramp_up_time*ramp_up_time;
 
     if (fabs(dpsi) < 2.0 * ramp_up_dist) { //delta-angle is too short for trapezoid
-        build_triangular_spin_traj(start_pose, end_pose, vec_of_states);
+        build_triangular_spin_traj(start_pose, end_pose, vec_states);
     } else {
-        build_trapezoidal_spin_traj(start_pose, end_pose, vec_of_states);
+        build_trapezoidal_spin_traj(start_pose, end_pose, vec_states);
     }
           }
 
@@ -222,9 +224,9 @@ void TrajBuilder::build_spin_traj(geometry_msgs::PoseStamped start_pose,
               double ramp_up_dist = 0.5 * speed_max_ * speed_max_ / alpha_max_;
               ROS_INFO("trip len = %f", trip_len);
               if (trip_len < 2.0 * ramp_up_dist) { //length is too short for trapezoid
-                  build_triangular_travel_traj(start_pose, end_pose, vec_of_states);
+                  build_triangular_travel_traj(start_pose, end_pose, vec_states);
               } else {
-                  build_trapezoidal_travel_traj(start_pose, end_pose, vec_of_states);
+                  build_trapezoidal_travel_traj(start_pose, end_pose, vec_states);
               }
           }
 
@@ -373,13 +375,16 @@ void TrajBuilder::build_braking_traj(geometry_msgs::PoseStamped start_pose,
         double psi_des = convertPlanarQuat2Psi(start_pose.pose.orientation);
 
         double cur_speed = fabs(des_state.twist.twist.linear.x);
+        double x_des = x_start;
+        double y_des = y_start;
+        
 
         while(cur_speed > 0.001){
           cur_speed-=decel_smooth*dt_;
           des_state.twist.twist.linear.x = cur_speed;
 
-          x_des += speed_des * dt_ * cos(psi_des);
-          y_des += speed_des * dt_ * sin(psi_des);
+          x_des += cur_speed * dt_ * cos(psi_des);
+          y_des += cur_speed * dt_ * sin(psi_des);
           des_state.pose.pose.position.x = x_des;
           des_state.pose.pose.position.y = y_des;
 
@@ -419,7 +424,7 @@ void TrajBuilder::build_point_and_go_traj(geometry_msgs::PoseStamped start_pose,
     double des_psi = atan2(dy, dx);
     ROS_INFO("desired heading to subgoal = %f", des_psi);
     bridge_pose = start_pose;
-    bridge_pose.pose.orientation = convertPlanarQuat2Psi(des_psi);
+    bridge_pose.pose.orientation = convertPlanarPsi2Quaternion(des_psi);
     build_spin_traj(start_pose, bridge_pose,vec_states);
     build_travel_traj(bridge_pose, end_pose, vec_states);
         }
