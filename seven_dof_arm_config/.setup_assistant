@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: ros_robot_description_pkg
+    relative_path: urdf/seven_dof_arm.urdf
+    xacro_args: ""
+  SRDF:
+    relative_path: config/seven_dof_arm.srdf
+  CONFIG:
+    author_name: Divyesh
+    author_email: kanagdhivy@gmail.com
+    generated_timestamp: 1638967480
