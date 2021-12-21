@@ -1,0 +1,4 @@
+Could not retrieve the map properly.
+Observed that there was a problem with the tf tree structure (specially between base_footprint frame and hokuyo link frame)
+A stream of warning were spit out.
+So, could not complete the mapping and amcl localization.

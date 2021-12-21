@@ -1,0 +1,22 @@
+<launch>
+  <!-- map not generated, there seems to be an error -->
+
+  <arg name="map_file" default="$(find diff_wheeled_robot_gazebo)/maps/test.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+  <arg name="initial_pose_x" default="0.0"/>
+  <arg name="initial_pose_y" default="0.0"/>
+  <arg name="initial_pose_a" default="0.0"/>
+
+  <include file="$(find diff_wheeled_robot_gazebo)/launch/includes/amcl.launch.xml">
+
+    <arg name="initial_pose_x" value="0"/>
+    <arg name="initial_pose_y" value="0"/>
+    <arg name="initial_pose_a" value="0"/>
+
+
+  </include>
+
+  <include file="$(find dif_wheeled_robot_gazebo)/launch/includes/move_base.launch.xml"/>
+
+</launch>
